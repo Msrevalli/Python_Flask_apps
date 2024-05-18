@@ -4,6 +4,7 @@ import time
 import numpy as np
 from PIL import Image
 from io import BytesIO
+import os
 
 app = Flask(__name__)
 
@@ -11,7 +12,7 @@ def find_camera_index():
     """
     Find an available camera index.
     """
-    for i in range(4):  # Try up to 4 camera indices
+    for i in range(10):  # Try up to 10 camera indices
         cap = cv2.VideoCapture(i)
         if cap.isOpened():
             cap.release()
@@ -28,8 +29,14 @@ else:
 # Initialize video capture
 video_capture = cv2.VideoCapture(camera_index)
 
+# Get the directory of the current script
+script_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Get the full path to the image file
+image_path = os.path.join(script_dir, "indian_flag.png")
+
 # Load the Indian flag image
-flag_image = Image.open("indian_flag.png")
+flag_image = Image.open(image_path)
 
 # Set flag dimensions
 flag_width = 640
@@ -118,5 +125,3 @@ def captured_image():
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)
-
-  
