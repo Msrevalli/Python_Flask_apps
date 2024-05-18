@@ -1,21 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Capture Image with Indian Flag Background</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Image</title>
 </head>
 <body>
-  <h1>Capture Image with Indian Flag Background</h1>
-  <img id="video-feed" src="/video_feed" width="640" height="480">
-  <button id="capture-button">Capture Image</button>
-  <img id="captured-image" src="" alt="Captured Image" style="display: none;">
-  <script>
-    const captureButton = document.getElementById('capture-button');
-    const capturedImage = document.getElementById('captured-image');
-
-    captureButton.addEventListener('click', () => {
-      capturedImage.src = '/captured_image';
-      capturedImage.style.display = 'block';
-    });
-  </script>
+    <h1>Capture Image</h1>
+    <form action="/capture" method="post">
+        <button type="submit">Capture Image</button>
+    </form>
+    {% if captured %}
+    <h2>Captured Image</h2>
+    <img src="{{ url_for('display_captured_image') }}" alt="Captured Image">
+    {% endif %}
 </body>
 </html>

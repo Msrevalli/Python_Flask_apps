@@ -14,6 +14,12 @@ This Flask application streams live video from your webcam, with the Indian flag
 2. **Install Dependencies:**
    ```bash
    pip install -r requirements.txt
-
-sudo apt-get update 
-sudo apt-get install libgl1-mesa-dev libglu1-mesa-dev libx11-dev libxext-dev libxrandr-dev 
+   ```
+3. **Install additional libraries:**
+   - For Debian-based Linux distributions:
+     ```bash
+     sudo apt-get update 
+     sudo apt-get install libgl1-mesa-dev libglu1-mesa-dev libx11-dev libxext-dev libxrandr-dev 
+     ```
+   - For Windows, these libraries are typically included with the graphics drivers. Make sure your drivers are up to date.
+   - For MacOS, these libraries are typically included with the system. Make sure your system is up to date.
