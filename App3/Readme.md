@@ -14,3 +14,6 @@ This Flask application streams live video from your webcam, with the Indian flag
 2. **Install Dependencies:**
    ```bash
    pip install -r requirements.txt
+
+sudo apt-get update 
+sudo apt-get install libgl1-mesa-dev libglu1-mesa-dev libx11-dev libxext-dev libxrandr-dev 

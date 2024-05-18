@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Face with Indian Flag</title>
+  <title>Capture Image with Indian Flag Background</title>
 </head>
 <body>
-  <h1>Face with Indian Flag</h1>
-  <img src="/video_feed" width="640" height="480">
+  <h1>Capture Image with Indian Flag Background</h1>
+  <img id="video-feed" src="/video_feed" width="640" height="480">
+  <button id="capture-button">Capture Image</button>
+  <img id="captured-image" src="" alt="Captured Image" style="display: none;">
+  <script>
+    const captureButton = document.getElementById('capture-button');
+    const capturedImage = document.getElementById('captured-image');
+
+    captureButton.addEventListener('click', () => {
+      capturedImage.src = '/captured_image';
+      capturedImage.style.display = 'block';
+    });
+  </script>
 </body>
 </html>

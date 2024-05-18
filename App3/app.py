@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, send_from_directory
 import cv2
 import time
 import numpy as np
@@ -7,16 +7,46 @@ from io import BytesIO
 
 app = Flask(__name__)
 
+def find_camera_index():
+    """
+    Find an available camera index.
+    """
+    for i in range(4):  # Try up to 4 camera indices
+        cap = cv2.VideoCapture(i)
+        if cap.isOpened():
+            cap.release()
+            return i
+    return None
+
+# Find an available camera index
+camera_index = find_camera_index()
+if camera_index is None:
+    print("Error: No camera detected.")
+else:
+    print(f"Using camera index: {camera_index}")
+
 # Initialize video capture
-video_capture = cv2.VideoCapture(0)
+video_capture = cv2.VideoCapture(camera_index)
 
 # Load the Indian flag image
 flag_image = Image.open("indian_flag.png")
+
+# Set flag dimensions
+flag_width = 640
+flag_height = 480
+flag_image_resized = flag_image.resize((flag_width, flag_height), Image.LANCZOS)
+
+# Set face detection parameters
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+# Variable to store the captured frame
+captured_frame = None
 
 def generate_frames():
     """
     Generates frames for the video stream.
     """
+    global captured_frame  # Access the global variable
     while True:
         success, frame = video_capture.read()
         if not success:
@@ -31,18 +61,22 @@ def generate_frames():
         # Create a PIL Image from the frame
         pil_image = Image.fromarray(rgb_frame)
 
-        # Resize the flag image to match the frame width
-        flag_width = frame.shape[1]
-        flag_image_resized = flag_image.resize((flag_width, int(flag_width * flag_image.height / flag_image.width)), Image.LANCZOS)
+        # Paste the resized flag image onto the frame
+        pil_image.paste(flag_image_resized, (0, 0), flag_image_resized)
 
-        # Paste the flag image onto the bottom of the frame
-        pil_image.paste(flag_image_resized, (0, frame.shape[0] - flag_image_resized.height), flag_image_resized)
+        # Convert the PIL Image back to a NumPy array
+        frame = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
 
-        # Convert the PIL Image back to a numpy array
-        frame = np.array(pil_image)
+        # Detect faces using OpenCV's Haar Cascade classifier
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
-        # Convert the frame back to BGR for OpenCV
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        # Draw rectangles around detected faces
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+
+            # Capture the frame with flag background
+            captured_frame = frame.copy()  # Store the current frame
 
         # Encode the frame as a JPEG
         ret, buffer = cv2.imencode('.jpg', frame)
@@ -65,5 +99,24 @@ def video_feed():
     """
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/captured_image')
+def captured_image():
+    """
+    Sends the captured frame with flag background.
+    """
+    global captured_frame
+    if captured_frame is not None:
+        # Save the image to a file (optional)
+        cv2.imwrite('captured_image.jpg', captured_frame)
+
+        # Convert the captured frame to bytes for the response
+        ret, buffer = cv2.imencode('.jpg', captured_frame)
+        frame = buffer.tobytes()
+        return Response(frame, mimetype='image/jpeg')
+    else:
+        return "No image captured yet."
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)
+
+  
