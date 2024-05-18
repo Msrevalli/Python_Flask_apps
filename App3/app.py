@@ -1,33 +1,32 @@
-from flask import Flask, render_template, request, send_from_directory
-import cv2
+# app.py
 import os
+from flask import Flask, render_template, request, redirect, url_for
+import base64
+from datetime import datetime
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 
-# Initialize video capture
-video_capture = cv2.VideoCapture(0)
-
-# Ensure the static directory exists
-if not os.path.exists('static'):
-    os.makedirs('static')
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/capture', methods=['POST'])
-def capture():
-    success, frame = video_capture.read()
-    if success:
-        save_path = 'static/captured_image.jpg'
-        cv2.imwrite(save_path, frame)
-        return render_template('index.html', captured=True, image_path=save_path)
-    else:
-        return render_template('index.html', captured=False)
+@app.route('/upload', methods=['POST'])
+def upload():
+    image_data = request.form['image']
+    image_data = image_data.replace('data:image/png;base64,', '')
+    image_data = base64.b64decode(image_data)
 
-@app.route('/display_captured_image')
-def display_captured_image():
-    return send_from_directory('static', 'captured_image.jpg')
+    filename = datetime.now().strftime("%Y%m%d%H%M%S") + '.png'
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    
+    with open(filepath, 'wb') as f:
+        f.write(image_data)
+    
+    return render_template('display.html', image_path=filename)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True)
+    app.run(debug=True)
