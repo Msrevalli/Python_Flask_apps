@@ -1,3 +1,2 @@
-flask
-pdfkit
+pip install flask pillow fpdf2
 
